@@ -1,0 +1,16 @@
+<svg viewBox="0 0 200 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="40" y1="20" x2="160" y2="220" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f0f0f0"/>
+      <stop offset="40%" stop-color="#c8c8c8"/>
+      <stop offset="70%" stop-color="#909090"/>
+      <stop offset="100%" stop-color="#b0b0b0"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer shield shape - angular, open at top-right -->
+  <path d="M60 16 L60 160 L100 200 L140 160 L140 56 L100 36 L60 56"
+        stroke="url(#g)" stroke-width="12" fill="none" stroke-linecap="square" stroke-linejoin="miter"/>
+  <!-- Inner overlapping shield - offset up-right, open at bottom-left -->
+  <path d="M140 224 L140 80 L100 40 L60 80 L60 164 L100 204 L140 164"
+        stroke="url(#g)" stroke-width="12" fill="none" stroke-linecap="square" stroke-linejoin="miter" opacity="0.7"/>
+</svg>

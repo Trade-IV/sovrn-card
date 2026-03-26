@@ -44,12 +44,14 @@ const PROFILE = {
   instagram: "https://www.instagram.com/s.o.v.r.n",
 };
 
+const ease = [0.25, 0.4, 0.25, 1] as const;
+
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.4, 0.25, 1] },
+    transition: { delay: i * 0.08, duration: 0.5, ease },
   }),
 };
 
@@ -58,7 +60,7 @@ const scaleIn = {
   visible: (i: number) => ({
     opacity: 1,
     scale: 1,
-    transition: { delay: i * 0.08, duration: 0.5, ease: [0.25, 0.4, 0.25, 1] },
+    transition: { delay: i * 0.08, duration: 0.5, ease },
   }),
 };
 

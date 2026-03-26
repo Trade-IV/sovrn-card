@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import {
   Phone,
@@ -10,6 +11,9 @@ import {
   MapPin,
   Shield,
   ArrowUpRight,
+  UserPlus,
+  Check,
+  Loader2,
 } from "lucide-react";
 
 // Brand icons (not available in lucide)
@@ -28,6 +32,8 @@ function InstagramIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+const CRM_URL = process.env.NEXT_PUBLIC_CRM_URL || "https://agency-crm.vercel.app";
 
 const PROFILE = {
   name: "Ruben Martinez IV",
@@ -173,7 +179,117 @@ function ActionButton({
   );
 }
 
+function ConnectForm({ onClose }: { onClose: () => void }) {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", occupation: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name || !form.email) return;
+
+    setStatus("sending");
+    try {
+      const res = await fetch(`${CRM_URL}/app/api/card-leads`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setStatus("success");
+      setTimeout(onClose, 2000);
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  if (status === "success") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="flex flex-col items-center gap-4 py-8"
+      >
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 border border-green-500/30">
+          <Check className="h-8 w-8 text-green-400" />
+        </div>
+        <p className="text-lg font-semibold">Connected!</p>
+        <p className="text-sm text-muted">Ruben will be in touch soon.</p>
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.form
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 10 }}
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-3"
+    >
+      <div className="text-center mb-2">
+        <p className="text-sm font-semibold text-foreground">Let&apos;s Connect</p>
+        <p className="text-xs text-muted mt-1">Share your info and I&apos;ll reach out</p>
+      </div>
+      <input
+        type="text"
+        placeholder="Your name *"
+        required
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
+        className="rounded-xl bg-surface-2 border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+      />
+      <input
+        type="email"
+        placeholder="Email *"
+        required
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+        className="rounded-xl bg-surface-2 border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+      />
+      <input
+        type="tel"
+        placeholder="Phone number"
+        value={form.phone}
+        onChange={(e) => setForm({ ...form, phone: e.target.value })}
+        className="rounded-xl bg-surface-2 border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+      />
+      <input
+        type="text"
+        placeholder="What do you do?"
+        value={form.occupation}
+        onChange={(e) => setForm({ ...form, occupation: e.target.value })}
+        className="rounded-xl bg-surface-2 border border-border px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:outline-none focus:border-accent/50 transition-colors"
+      />
+      {status === "error" && (
+        <p className="text-xs text-red-400 text-center">Something went wrong. Try again.</p>
+      )}
+      <div className="flex gap-2 mt-1">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex-1 rounded-xl border border-border py-3 text-sm text-muted hover:text-foreground hover:border-muted/50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="flex-1 rounded-xl bg-accent py-3 text-sm font-medium text-white hover:bg-accent/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {status === "sending" ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            "Send"
+          )}
+        </button>
+      </div>
+    </motion.form>
+  );
+}
+
 export default function Card() {
+  const [showConnect, setShowConnect] = useState(false);
+
   const handleSaveContact = () => {
     window.location.href = "/api/contact";
   };
@@ -280,28 +396,49 @@ export default function Card() {
         <div className="flex flex-col gap-3 mb-8">
           <ActionButton
             i={8}
+            icon={UserPlus}
+            label="Let's Connect"
+            subtitle="Share your info to stay in touch"
+            primary
+            onClick={() => setShowConnect(true)}
+          />
+
+          <AnimatePresence>
+            {showConnect && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden rounded-2xl bg-surface border border-border p-4"
+              >
+                <ConnectForm onClose={() => setShowConnect(false)} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <ActionButton
+            i={9}
             icon={Download}
             label="Save Contact"
             subtitle="Add to your phone contacts"
-            primary
             onClick={handleSaveContact}
           />
           <ActionButton
-            i={9}
+            i={10}
             href={`tel:${PROFILE.phone}`}
             icon={Phone}
             label="Call"
             subtitle={PROFILE.phoneDisplay}
           />
           <ActionButton
-            i={10}
+            i={11}
             href={`mailto:${PROFILE.email}`}
             icon={Mail}
             label="Email"
             subtitle={PROFILE.email}
           />
           <ActionButton
-            i={11}
+            i={12}
             href={PROFILE.website}
             icon={Globe}
             label="Website"
